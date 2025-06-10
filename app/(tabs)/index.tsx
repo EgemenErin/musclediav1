@@ -52,78 +52,73 @@ export default function HomeScreen() {
     setGreeting(getGreeting());
   }, []);
 
-  const isDark = colorScheme === 'dark';
-  const textColor = isDark ? '#F9FAFB' : '#111827';
-  const bgColor = isDark ? '#111827' : '#F9FAFB';
-  const cardBgColor = isDark ? '#1F2937' : '#FFFFFF';
-
   return (
-    <ScrollView 
-      style={[styles.container, { backgroundColor: bgColor }]}
-      contentContainerStyle={styles.contentContainer}
+    <LinearGradient
+      colors={isDark ? [theme.background, theme.surface] : [theme.surface, theme.background]}
+      style={styles.container}
     >
-      <View style={styles.header}>
-        <Text style={[styles.greeting, { color: textColor }]}>{greeting}</Text>
-        <Text style={[styles.username, { color: textColor }]}>
-          {character.name || 'Adventurer'}
-        </Text>
-      </View>
-
-      <View style={[styles.characterSection, { backgroundColor: cardBgColor }]}>
-        <CharacterAvatar 
-          level={character.level} 
-          gender={character.gender} 
-          streak={character.streak}
-          size="large"
-        />
-        <View style={styles.levelInfo}>
-          <Text style={[styles.levelText, { color: textColor }]}>
-            Level {character.level}
-          </Text>
-          <ProgressBar 
-            progress={character.xp / character.xpToNextLevel} 
-            color="#6D28D9"
-          />
-          <Text style={[styles.xpText, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>
-            {character.xp}/{character.xpToNextLevel} XP to Level {character.level + 1}
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <View style={styles.header}>
+          <Text style={[styles.greeting, { color: theme.textSecondary }]}>{greeting}</Text>
+          <Text style={[styles.username, { color: theme.text }]}>
+            {user?.name || character.name || 'Adventurer'}
           </Text>
         </View>
-      </View>
 
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        Your Stats
-      </Text>
+        <View style={[styles.characterSection, { backgroundColor: theme.surface }]}>
+          <CharacterAvatar 
+            level={character.level} 
+            gender={character.gender} 
+            streak={character.streak}
+            size="large"
+          />
+          <View style={styles.levelInfo}>
+            <Text style={[styles.levelText, { color: theme.text }]}>
+              Level {character.level}
+            </Text>
+            <ProgressBar 
+              progress={character.xp / character.xpToNextLevel} 
+              color={Colors.primary}
+            />
+            <Text style={[styles.xpText, { color: theme.textSecondary }]}>
+              {character.xp}/{character.xpToNextLevel} XP to Level {character.level + 1}
+            </Text>
+          </View>
+        </View>
 
-      <View style={styles.statsGrid}>
-        <StatsCard 
-          title="Streak"
-          value={character.streak.toString()}
-          icon={<Fire size={24} color="#F97316" />}
-          bgColor={isDark ? '#374151' : '#FFFFFF'}
-          textColor={textColor}
-        />
-        <StatsCard 
-          title="Total XP"
-          value={character.totalXP.toString()}
-          icon={<Zap size={24} color="#0EA5E9" />}
-          bgColor={isDark ? '#374151' : '#FFFFFF'}
-          textColor={textColor}
-        />
-        <StatsCard 
-          title="Quests Done"
-          value={character.questsCompleted.toString()}
-          icon={<Trophy size={24} color="#10B981" />}
-          bgColor={isDark ? '#374151' : '#FFFFFF'}
-          textColor={textColor}
-        />
-        <StatsCard 
-          title="Level Ups"
-          value={character.level.toString()}
-          icon={<TrendingUp size={24} color="#6D28D9" />}
-          bgColor={isDark ? '#374151' : '#FFFFFF'}
-          textColor={textColor}
-        />
-      </View>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Your Stats
+        </Text>
+
+        <View style={styles.statsGrid}>
+          <StatsCard 
+            title="Streak"
+            value={character.streak.toString()}
+            icon={<Fire size={24} color="#F97316" />}
+            accentColor="#F97316"
+          />
+          <StatsCard 
+            title="Total XP"
+            value={character.totalXP.toString()}
+            icon={<Zap size={24} color="#0EA5E9" />}
+            accentColor="#0EA5E9"
+          />
+          <StatsCard 
+            title="Quests Done"
+            value={character.questsCompleted.toString()}
+            icon={<Trophy size={24} color="#10B981" />}
+            accentColor="#10B981"
+          />
+          <StatsCard 
+            title="Level Ups"
+            value={character.level.toString()}
+            icon={<TrendingUp size={24} color={Colors.primary} />}
+            accentColor={Colors.primary}
+          />
+        </View>
 
       <Text style={[styles.sectionTitle, { color: textColor }]}>
         Next Quest
@@ -169,7 +164,8 @@ export default function HomeScreen() {
           </View>
         ))
       )}
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
