@@ -12,9 +12,11 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react-native';
+import { Colors, getThemeColors } from '@/constants/Colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -26,11 +28,7 @@ export default function LoginScreen() {
   const colorScheme = useColorScheme();
 
   const isDark = colorScheme === 'dark';
-  const textColor = isDark ? '#F9FAFB' : '#111827';
-  const bgColor = isDark ? '#111827' : '#F9FAFB';
-  const cardBgColor = isDark ? '#1F2937' : '#FFFFFF';
-  const inputBgColor = isDark ? '#374151' : '#F3F4F6';
-  const borderColor = isDark ? '#4B5563' : '#D1D5DB';
+  const theme = getThemeColors(isDark);
 
   const handleLogin = async () => {
     if (isLoading) return;
@@ -57,36 +55,40 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: bgColor }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <LinearGradient
+      colors={isDark ? [theme.background, theme.surface] : [theme.surface, theme.background]}
+      style={styles.container}
     >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.content}>
-          {/* Logo/Title */}
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: textColor }]}>MuscleDia</Text>
-            <Text style={[styles.subtitle, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>
-              Level up your fitness journey
-            </Text>
-          </View>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            {/* Logo/Title */}
+            <View style={styles.header}>
+              <Text style={[styles.title, { color: Colors.primary }]}>MuscleDia</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+                Level up your fitness journey
+              </Text>
+            </View>
 
-          {/* Login Form */}
-          <View style={[styles.form, { backgroundColor: cardBgColor }]}>
-            <Text style={[styles.formTitle, { color: textColor }]}>Welcome Back!</Text>
+            {/* Login Form */}
+            <View style={[styles.form, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.formTitle, { color: theme.text }]}>Welcome Back!</Text>
             
             {/* Email Input */}
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: textColor }]}>Email</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: inputBgColor, borderColor }]}>
-                <Mail size={20} color={isDark ? '#9CA3AF' : '#6B7280'} style={styles.inputIcon} />
+              <Text style={[styles.label, { color: theme.text }]}>Email</Text>
+              <View style={[styles.inputWrapper, { backgroundColor: theme.surfaceLight, borderColor: theme.border }]}>
+                <Mail size={20} color={theme.textMuted} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { color: textColor }]}
+                  style={[styles.input, { color: theme.text }]}
                   placeholder="Enter your email"
-                  placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                  placeholderTextColor={theme.textMuted}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -149,6 +151,7 @@ export default function LoginScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
@@ -220,13 +223,18 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   loginButton: {
-    backgroundColor: '#6D28D9',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
     marginBottom: 16,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   loginButtonText: {
     color: '#FFFFFF',

@@ -12,9 +12,11 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react-native';
+import { Colors, getThemeColors } from '@/constants/Colors';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');

@@ -8,19 +8,26 @@ import {
   Image,
   useColorScheme,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCharacter } from '@/hooks/useCharacter';
+import { useAuth } from '@/hooks/useAuth';
 import CharacterAvatar from '@/components/CharacterAvatar';
 import ProgressBar from '@/components/ProgressBar';
 import { Siren as Fire, Zap, Trophy, TrendingUp } from 'lucide-react-native';
 import StatsCard from '@/components/StatsCard';
 import { getGreeting } from '@/utils/helpers';
 import { useWorkouts } from '@/hooks/useWorkouts';
+import { Colors, getThemeColors } from '@/constants/Colors';
 
 export default function HomeScreen() {
   const { character, incrementXP } = useCharacter();
+  const { user } = useAuth();
   const colorScheme = useColorScheme();
   const [greeting, setGreeting] = useState('');
   const { workouts } = useWorkouts();
+  
+  const isDark = colorScheme === 'dark';
+  const theme = getThemeColors(isDark);
 
   // Helper to get start of week (Monday)
   function getStartOfWeek(date = new Date()) {

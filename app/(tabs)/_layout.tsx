@@ -2,29 +2,43 @@ import { Tabs } from 'expo-router';
 import { Chrome as Home, Dumbbell, Award, User, Plus } from 'lucide-react-native';
 import { useColorScheme, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { Colors, getThemeColors } from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = getThemeColors(isDark);
   
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6D28D9',
-        tabBarInactiveTintColor: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: theme.textMuted,
         tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1F2937' : '#FFFFFF',
+          backgroundColor: theme.surface,
           borderTopWidth: 1,
-          borderTopColor: colorScheme === 'dark' ? '#374151' : '#E5E7EB',
+          borderTopColor: theme.border,
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 8,
         },
         headerStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1F2937' : '#FFFFFF',
+          backgroundColor: theme.surface,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 4,
         },
-        headerTintColor: colorScheme === 'dark' ? '#F9FAFB' : '#111827',
+        headerTintColor: theme.text,
         headerTitleStyle: {
           fontWeight: 'bold',
+          color: theme.text,
         },
       }}>
       <Tabs.Screen

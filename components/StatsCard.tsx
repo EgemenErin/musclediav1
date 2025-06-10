@@ -1,26 +1,41 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
+import { Colors, getThemeColors } from '@/constants/Colors';
 
 type StatsCardProps = {
   title: string;
   value: string;
   icon?: React.ReactNode;
-  bgColor?: string;
-  textColor?: string;
+  accentColor?: string;
 };
 
 export default function StatsCard({
   title,
   value,
   icon,
-  bgColor = '#FFFFFF',
-  textColor = '#111827',
+  accentColor = Colors.primary,
 }: StatsCardProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = getThemeColors(isDark);
+
   return (
-    <View style={[styles.container, { backgroundColor: bgColor }]}>
-      {icon && <View style={styles.iconContainer}>{icon}</View>}
-      <Text style={[styles.value, { color: textColor }]}>{value}</Text>
-      <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+    <View style={[styles.container, { 
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      shadowColor: isDark ? Colors.black : accentColor,
+    }]}>
+      {icon && (
+        <View style={[styles.iconContainer, { 
+          backgroundColor: accentColor + '15',
+          borderRadius: 12,
+          padding: 8,
+        }]}>
+          {icon}
+        </View>
+      )}
+      <Text style={[styles.value, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.title, { color: theme.textSecondary }]}>{title}</Text>
     </View>
   );
 }
