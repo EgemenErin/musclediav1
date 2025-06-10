@@ -120,50 +120,50 @@ export default function HomeScreen() {
           />
         </View>
 
-      <Text style={[styles.sectionTitle, { color: textColor }]}>
-        Next Quest
-      </Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Next Quest
+        </Text>
 
-      <TouchableOpacity 
-        style={[styles.nextQuestCard, { backgroundColor: cardBgColor }]}
-        onPress={() => incrementXP(50)}
-      >
-        <View style={styles.questContent}>
-          <Text style={[styles.questTitle, { color: textColor }]}>
-            Morning Workout Challenge
-          </Text>
-          <Text style={[styles.questDescription, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>
-            Complete 20 push-ups and 30 squats
-          </Text>
-          <View style={styles.questReward}>
-            <Zap size={16} color="#0EA5E9" />
-            <Text style={[styles.questRewardText, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>
-              +50 XP
+        <TouchableOpacity 
+          style={[styles.nextQuestCard, { backgroundColor: theme.surface }]}
+          onPress={() => incrementXP(50)}
+        >
+          <View style={styles.questContent}>
+            <Text style={[styles.questTitle, { color: theme.text }]}>
+              Morning Workout Challenge
             </Text>
+            <Text style={[styles.questDescription, { color: theme.textSecondary }]}>
+              Complete 20 push-ups and 30 squats
+            </Text>
+            <View style={styles.questReward}>
+              <Zap size={16} color="#0EA5E9" />
+              <Text style={[styles.questRewardText, { color: theme.textSecondary }]}>
+                +50 XP
+              </Text>
+            </View>
           </View>
-        </View>
-        <View style={[styles.questButton, { backgroundColor: '#6D28D9' }]}>
-          <Text style={styles.questButtonText}>Start</Text>
-        </View>
-      </TouchableOpacity>
+          <View style={[styles.questButton, { backgroundColor: Colors.primary }]}>
+            <Text style={styles.questButtonText}>Start</Text>
+          </View>
+        </TouchableOpacity>
 
-      {/* Recent Workouts Section */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>Recent Workouts</Text>
-      {workoutsToShow.length === 0 ? (
-        <View style={[styles.noWorkoutsCard, { backgroundColor: cardBgColor }]}> 
-          <Text style={{ color: textColor }}>No workouts so far. Add one from the Exercises tab!</Text>
-        </View>
-      ) : (
-        workoutsToShow.slice(0, 5).map((workout, idx) => (
-          <View key={workout.timestamp} style={[styles.workoutCard, { backgroundColor: cardBgColor }]}> 
-            <Text style={[styles.workoutName, { color: textColor }]}>{workout.name}</Text>
-            <Text style={[styles.workoutDetails, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>Sets: {workout.sets}   Reps: {workout.reps}   Weight: {workout.weight} kg</Text>
-            <Text style={[styles.workoutDate, { color: isDark ? '#9CA3AF' : '#6B7280' }]}> 
-              {new Date(workout.timestamp).toLocaleString()}
-            </Text>
+        {/* Recent Workouts Section */}
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Workouts</Text>
+        {workoutsToShow.length === 0 ? (
+          <View style={[styles.noWorkoutsCard, { backgroundColor: theme.surface }]}> 
+            <Text style={{ color: theme.text }}>No workouts so far. Add one from the Exercises tab!</Text>
           </View>
-        ))
-      )}
+        ) : (
+          workoutsToShow.slice(0, 5).map((workout, idx) => (
+            <View key={workout.timestamp} style={[styles.workoutCard, { backgroundColor: theme.surface }]}> 
+              <Text style={[styles.workoutName, { color: theme.text }]}>{workout.name}</Text>
+              <Text style={[styles.workoutDetails, { color: theme.textSecondary }]}>Sets: {workout.sets}   Reps: {workout.reps}   Weight: {workout.weight} kg</Text>
+              <Text style={[styles.workoutDate, { color: theme.textMuted }]}> 
+                {new Date(workout.timestamp).toLocaleString()}
+              </Text>
+            </View>
+          ))
+        )}
       </ScrollView>
     </LinearGradient>
   );
