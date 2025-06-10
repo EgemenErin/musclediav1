@@ -9,11 +9,13 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useCharacter } from '@/hooks/useCharacter';
+import { useAuth } from '@/hooks/useAuth';
 import CharacterAvatar from '@/components/CharacterAvatar';
-import { User, CreditCard as Edit, Save, Dumbbell, Award, Ruler, Weight } from 'lucide-react-native';
+import { User, CreditCard as Edit, Save, Dumbbell, Award, Ruler, Weight, LogOut } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const { character, updateCharacter } = useCharacter();
+  const { logout, user } = useAuth();
   const colorScheme = useColorScheme();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(character.name || 'Adventurer');
