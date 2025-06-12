@@ -20,22 +20,34 @@ export default function StatsCard({
   const theme = getThemeColors(isDark);
 
   return (
-    <View style={[styles.container, { 
-      backgroundColor: theme.surface,
-      borderColor: theme.border,
-      shadowColor: isDark ? Colors.black : accentColor,
-    }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
+          shadowColor: isDark ? Colors.black : accentColor,
+        },
+      ]}
+    >
       {icon && (
-        <View style={[styles.iconContainer, { 
-          backgroundColor: accentColor + '15',
-          borderRadius: 12,
-          padding: 8,
-        }]}>
+        <View
+          style={[
+            styles.iconContainer,
+            {
+              backgroundColor: accentColor + '15',
+              borderRadius: 12,
+              padding: 8,
+            },
+          ]}
+        >
           {icon}
         </View>
       )}
       <Text style={[styles.value, { color: theme.text }]}>{value}</Text>
-      <Text style={[styles.title, { color: theme.textSecondary }]}>{title}</Text>
+      <Text style={[styles.title, { color: theme.textSecondary }]}>
+        {title}
+      </Text>
     </View>
   );
 }
