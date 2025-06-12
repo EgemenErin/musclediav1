@@ -54,13 +54,10 @@ export default function RegisterScreen() {
     setIsLoading(true);
     try {
       const result = await register(email.trim(), password, name.trim());
-      
+
       if (result.success) {
-        Alert.alert(
-          'Success!', 
-          'Your account has been created successfully.',
-          [{ text: 'Continue', onPress: () => router.replace('/(tabs)') }]
-        );
+        // Always go to onboarding after registration
+        router.replace('/(auth)/onboarding');
       } else {
         Alert.alert('Registration Failed', result.error || 'Please try again.');
       }
@@ -76,32 +73,50 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: bgColor }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
           {/* Logo/Title */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: textColor }]}>Join MuscleDia</Text>
-            <Text style={[styles.subtitle, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>
+            <Text style={[styles.title, { color: textColor }]}>
+              Join MuscleDia
+            </Text>
+            <Text
+              style={[
+                styles.subtitle,
+                { color: isDark ? '#D1D5DB' : '#4B5563' },
+              ]}
+            >
               Start your fitness adventure today
             </Text>
           </View>
 
           {/* Register Form */}
           <View style={[styles.form, { backgroundColor: cardBgColor }]}>
-            <Text style={[styles.formTitle, { color: textColor }]}>Create Account</Text>
-            
+            <Text style={[styles.formTitle, { color: textColor }]}>
+              Create Account
+            </Text>
+
             {/* Name Input */}
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: textColor }]}>Name</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: inputBgColor, borderColor }]}>
-                <User size={20} color={isDark ? '#9CA3AF' : '#6B7280'} style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputWrapper,
+                  { backgroundColor: inputBgColor, borderColor },
+                ]}
+              >
+                <User
+                  size={20}
+                  color={isDark ? '#9CA3AF' : '#6B7280'}
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={[styles.input, { color: textColor }]}
                   placeholder="Enter your name"
@@ -117,8 +132,17 @@ export default function RegisterScreen() {
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: textColor }]}>Email</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: inputBgColor, borderColor }]}>
-                <Mail size={20} color={isDark ? '#9CA3AF' : '#6B7280'} style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputWrapper,
+                  { backgroundColor: inputBgColor, borderColor },
+                ]}
+              >
+                <Mail
+                  size={20}
+                  color={isDark ? '#9CA3AF' : '#6B7280'}
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={[styles.input, { color: textColor }]}
                   placeholder="Enter your email"
@@ -135,8 +159,17 @@ export default function RegisterScreen() {
             {/* Password Input */}
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: textColor }]}>Password</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: inputBgColor, borderColor }]}>
-                <Lock size={20} color={isDark ? '#9CA3AF' : '#6B7280'} style={styles.inputIcon} />
+              <View
+                style={[
+                  styles.inputWrapper,
+                  { backgroundColor: inputBgColor, borderColor },
+                ]}
+              >
+                <Lock
+                  size={20}
+                  color={isDark ? '#9CA3AF' : '#6B7280'}
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={[styles.input, { color: textColor }]}
                   placeholder="Create a password"
@@ -157,16 +190,32 @@ export default function RegisterScreen() {
                   )}
                 </TouchableOpacity>
               </View>
-              <Text style={[styles.passwordHint, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
+              <Text
+                style={[
+                  styles.passwordHint,
+                  { color: isDark ? '#9CA3AF' : '#6B7280' },
+                ]}
+              >
                 Minimum 6 characters
               </Text>
             </View>
 
             {/* Confirm Password Input */}
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: textColor }]}>Confirm Password</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: inputBgColor, borderColor }]}>
-                <Lock size={20} color={isDark ? '#9CA3AF' : '#6B7280'} style={styles.inputIcon} />
+              <Text style={[styles.label, { color: textColor }]}>
+                Confirm Password
+              </Text>
+              <View
+                style={[
+                  styles.inputWrapper,
+                  { backgroundColor: inputBgColor, borderColor },
+                ]}
+              >
+                <Lock
+                  size={20}
+                  color={isDark ? '#9CA3AF' : '#6B7280'}
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={[styles.input, { color: textColor }]}
                   placeholder="Confirm your password"
@@ -204,7 +253,12 @@ export default function RegisterScreen() {
 
             {/* Login Link */}
             <View style={styles.loginContainer}>
-              <Text style={[styles.loginText, { color: isDark ? '#D1D5DB' : '#4B5563' }]}>
+              <Text
+                style={[
+                  styles.loginText,
+                  { color: isDark ? '#D1D5DB' : '#4B5563' },
+                ]}
+              >
                 Already have an account?{' '}
               </Text>
               <TouchableOpacity onPress={navigateToLogin}>
@@ -289,6 +343,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+
   registerButton: {
     backgroundColor: '#6D28D9',
     borderRadius: 12,
@@ -316,4 +371,4 @@ const styles = StyleSheet.create({
     color: '#6D28D9',
     fontWeight: '600',
   },
-}); 
+});
