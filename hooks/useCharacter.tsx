@@ -1,215 +1,150 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { useAuth } from './useAuth';
+import { CharacterService } from '@/services/characterService';
+import type { Database } from '@/lib/supabase-types';
 
-type Gender = 'male' | 'female';
-
-type Character = {
-  name: string;
-  level: number;
-  xp: number;
-  xpToNextLevel: number;
-  totalXP: number;
-  streak: number;
-  lastWorkout: string | null;
-  questsCompleted: number;
-  gender: Gender;
-  height?: number;
-  weight?: number;
-  goal?: string;
-};
+type Character = Database['public']['Tables']['characters']['Row'];
 
 type CharacterContextType = {
-  character: Character;
-  updateCharacter: (updatedCharacter: Partial<Character>) => void;
-  incrementXP: (amount: number) => void;
-  completeQuest: (questId: string, xpReward: number) => void;
-  resetCharacter: () => void;
+  character: Character | null;
+  isLoading: boolean;
+  error: string | null;
+  updateCharacter: (updates: Partial<Character>) => Promise<void>;
+  incrementXP: (amount: number) => Promise<void>;
+  completeQuest: (questId: string, xpReward: number) => Promise<void>;
+  resetCharacter: () => Promise<void>;
 };
 
-const DEFAULT_CHARACTER: Character = {
-  name: 'Adventurer',
-  level: 1,
-  xp: 0,
-  xpToNextLevel: 100,
-  totalXP: 0,
-  streak: 0,
-  lastWorkout: null,
-  questsCompleted: 0,
-  gender: 'male',
-};
+const CharacterContext = createContext<CharacterContextType | undefined>(
+  undefined
+);
 
-const CharacterContext = createContext<CharacterContextType | undefined>(undefined);
+export const CharacterProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [character, setCharacter] = useState<Character | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-export const CharacterProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [character, setCharacter] = useState<Character>(DEFAULT_CHARACTER);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Load character data on initial render
+  // Load character data when user changes
   useEffect(() => {
     const loadCharacter = async () => {
+      if (!user?.id) {
+        setCharacter(null);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
       try {
-        const storedCharacter = await AsyncStorage.getItem('character');
-        if (storedCharacter) {
-          setCharacter(JSON.parse(storedCharacter));
+        const { character: loadedCharacter, error: fetchError } =
+          await CharacterService.getCharacterByUserId(user.id);
+
+        if (fetchError) {
+          throw new Error(fetchError);
         }
-      } catch (error) {
-        console.error('Failed to load character data:', error);
+
+        setCharacter(loadedCharacter || null);
+      } catch (err) {
+        console.error('Failed to load character:', err);
+        setError('Failed to load character data');
       } finally {
-        setIsInitialized(true);
+        setIsLoading(false);
       }
     };
 
     loadCharacter();
-  }, []);
+  }, [user?.id]);
 
-  // Update streak based on last workout date
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const updateStreak = () => {
-      const today = new Date().toISOString().split('T')[0];
-      const lastWorkout = character.lastWorkout;
-
-      if (!lastWorkout) {
-        // First time user, no streak yet
-        return;
-      }
-
-      const lastWorkoutDate = new Date(lastWorkout);
-      const currentDate = new Date(today);
-      
-      // Calculate the difference in days
-      const timeDiff = currentDate.getTime() - lastWorkoutDate.getTime();
-      const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-
-      if (daysDiff === 1) {
-        // Consecutive day, increase streak
-        updateCharacter({ 
-          streak: character.streak + 1,
-          lastWorkout: today
-        });
-      } else if (daysDiff > 1) {
-        // Streak broken
-        updateCharacter({ 
-          streak: 0,
-          lastWorkout: today
-        });
-      }
-    };
-
-    updateStreak();
-  }, [isInitialized]);
-
-  // Save character data whenever it changes
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const saveCharacter = async () => {
-      try {
-        await AsyncStorage.setItem('character', JSON.stringify(character));
-      } catch (error) {
-        console.error('Failed to save character data:', error);
-      }
-    };
-
-    saveCharacter();
-  }, [character, isInitialized]);
-
-  // Calculate XP needed for next level (increases with each level)
-  const calculateXPToNextLevel = (level: number) => {
-    return Math.floor(100 * Math.pow(1.2, level - 1));
-  };
-
-  // Handle leveling up logic
-  const checkLevelUp = (xp: number, currentLevel: number, currentXpToNextLevel: number) => {
-    if (xp >= currentXpToNextLevel) {
-      const newLevel = currentLevel + 1;
-      const remainingXP = xp - currentXpToNextLevel;
-      const newXpToNextLevel = calculateXPToNextLevel(newLevel);
-      
-      return {
-        level: newLevel,
-        xp: remainingXP,
-        xpToNextLevel: newXpToNextLevel,
-      };
+  const updateCharacter = async (updates: Partial<Character>) => {
+    if (!character?.id) {
+      setError('No character found to update');
+      return;
     }
-    
-    return {
-      level: currentLevel,
-      xp: xp,
-      xpToNextLevel: currentXpToNextLevel,
-    };
-  };
 
-  // Update character with new values
-  const updateCharacter = (updatedCharacter: Partial<Character>) => {
-    setCharacter(prevCharacter => ({
-      ...prevCharacter,
-      ...updatedCharacter,
-    }));
-  };
+    try {
+      const { character: updatedCharacter, error: updateError } =
+        await CharacterService.updateCharacter(character.id, updates);
 
-  // Add XP and handle leveling up
-  const incrementXP = (amount: number) => {
-    const newXP = character.xp + amount;
-    const newTotalXP = character.totalXP + amount;
-    
-    const levelData = checkLevelUp(newXP, character.level, character.xpToNextLevel);
-    
-    updateCharacter({
-      ...levelData,
-      totalXP: newTotalXP,
-    });
-  };
-
-  // Complete a quest and get the reward
-  const completeQuest = (questId: string, xpReward: number) => {
-    const today = new Date().toISOString().split('T')[0];
-    const lastWorkout = character.lastWorkout;
-    
-    let newStreak = character.streak;
-    
-    if (lastWorkout !== today) {
-      if (!lastWorkout) {
-        // First workout ever
-        newStreak = 1;
-      } else {
-        const lastWorkoutDate = new Date(lastWorkout);
-        const currentDate = new Date(today);
-        
-        const timeDiff = currentDate.getTime() - lastWorkoutDate.getTime();
-        const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-        
-        if (daysDiff === 1) {
-          // Consecutive day
-          newStreak += 1;
-        } else if (daysDiff > 1) {
-          // Streak broken
-          newStreak = 1;
-        }
-        // If same day, streak stays the same
+      if (updateError) {
+        throw new Error(updateError);
       }
+
+      if (updatedCharacter) {
+        setCharacter(updatedCharacter);
+      }
+    } catch (err) {
+      console.error('Failed to update character:', err);
+      setError('Failed to update character');
     }
-    
-    // Update character stats
-    incrementXP(xpReward);
-    updateCharacter({
-      questsCompleted: character.questsCompleted + 1,
-      lastWorkout: today,
-      streak: newStreak,
-    });
   };
 
-  // Reset character to default values
-  const resetCharacter = () => {
-    setCharacter(DEFAULT_CHARACTER);
+  const incrementXP = async (amount: number) => {
+    if (!character?.id) {
+      setError('No character found to update XP');
+      return;
+    }
+
+    try {
+      const { character: updatedCharacter, error: xpError } =
+        await CharacterService.addXP(character.id, amount);
+
+      if (xpError) {
+        throw new Error(xpError);
+      }
+
+      if (updatedCharacter) {
+        setCharacter(updatedCharacter);
+      }
+    } catch (err) {
+      console.error('Failed to increment XP:', err);
+      setError('Failed to update XP');
+    }
+  };
+
+  const completeQuest = async (questId: string, xpReward: number) => {
+    if (!character?.id) {
+      setError('No character found to complete quest');
+      return;
+    }
+
+    try {
+      const { character: updatedCharacter, error: questError } =
+        await CharacterService.completeQuest(character.id, xpReward);
+
+      if (questError) {
+        throw new Error(questError);
+      }
+
+      if (updatedCharacter) {
+        setCharacter(updatedCharacter);
+      }
+    } catch (err) {
+      console.error('Failed to complete quest:', err);
+      setError('Failed to complete quest');
+    }
+  };
+
+  const resetCharacter = async () => {
+    setCharacter(null);
+    setError(null);
   };
 
   return (
     <CharacterContext.Provider
       value={{
         character,
+        isLoading,
+        error,
         updateCharacter,
         incrementXP,
         completeQuest,

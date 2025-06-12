@@ -6,13 +6,15 @@ import {
   FlatList,
   Image,
   useColorScheme,
+  ActivityIndicator,
 } from 'react-native';
 import { useCharacter } from '@/hooks/useCharacter';
+import SafeTabView from '@/components/SafeTabView';
 import { badges } from '@/data/badges';
-import { Lock } from 'lucide-react-native';
+import { Lock, AlertCircle } from 'lucide-react-native';
 
 export default function AchievementsScreen() {
-  const { character } = useCharacter();
+  const { character, isLoading, error } = useCharacter();
   const colorScheme = useColorScheme();
 
   const isDark = colorScheme === 'dark';
@@ -20,10 +22,36 @@ export default function AchievementsScreen() {
   const bgColor = isDark ? '#111827' : '#F9FAFB';
   const cardBgColor = isDark ? '#1F2937' : '#FFFFFF';
 
+  if (isLoading) {
+    return (
+      <SafeTabView style={[styles.container, { backgroundColor: bgColor }]}>
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#6D28D9" />
+          <Text style={[styles.loadingText, { color: textColor }]}>
+            Loading achievements...
+          </Text>
+        </View>
+      </SafeTabView>
+    );
+  }
+
+  if (error || !character) {
+    return (
+      <SafeTabView style={[styles.container, { backgroundColor: bgColor }]}>
+        <View style={styles.centerContent}>
+          <AlertCircle size={48} color="#EF4444" />
+          <Text style={[styles.errorText, { color: textColor }]}>
+            {error || 'Failed to load achievements'}
+          </Text>
+        </View>
+      </SafeTabView>
+    );
+  }
+
   // Determine which badges the user has earned
-  const badgesWithStatus = badges.map(badge => {
+  const badgesWithStatus = badges.map((badge) => {
     let isUnlocked = false;
-    
+
     switch (badge.criteriaType) {
       case 'level':
         isUnlocked = character.level >= badge.criteriaValue;
@@ -32,26 +60,26 @@ export default function AchievementsScreen() {
         isUnlocked = character.streak >= badge.criteriaValue;
         break;
       case 'quests':
-        isUnlocked = character.questsCompleted >= badge.criteriaValue;
+        isUnlocked = character.quests_completed >= badge.criteriaValue;
         break;
       default:
         isUnlocked = false;
     }
-    
+
     return {
       ...badge,
-      isUnlocked
+      isUnlocked,
     };
   });
 
-  const renderBadgeItem = ({ item }) => {
+  const renderBadgeItem = ({ item }: { item: any }) => {
     return (
       <View style={[styles.badgeCard, { backgroundColor: cardBgColor }]}>
         <View style={styles.badgeImageContainer}>
           {item.isUnlocked ? (
-            <Image 
-              source={{ uri: item.imageUrl }} 
-              style={styles.badgeImage} 
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.badgeImage}
               resizeMode="contain"
             />
           ) : (
@@ -60,20 +88,20 @@ export default function AchievementsScreen() {
             </View>
           )}
         </View>
-        
+
         <Text style={[styles.badgeName, { color: textColor }]}>
           {item.name}
         </Text>
-        
-        <Text 
+
+        <Text
           style={[
-            styles.badgeDescription, 
-            { color: isDark ? '#D1D5DB' : '#6B7280' }
+            styles.badgeDescription,
+            { color: isDark ? '#D1D5DB' : '#6B7280' },
           ]}
         >
           {item.isUnlocked ? item.description : item.unlockCriteria}
         </Text>
-        
+
         {item.isUnlocked && (
           <View style={styles.unlockedBadge}>
             <Text style={styles.unlockedText}>Unlocked</Text>
@@ -84,27 +112,48 @@ export default function AchievementsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeTabView
+      style={[styles.container, { backgroundColor: bgColor }]}
+      useScrollView={false}
+    >
       <View style={styles.statsContainer}>
         <Text style={[styles.statsText, { color: textColor }]}>
-          Badges Earned: {badgesWithStatus.filter(b => b.isUnlocked).length} / {badges.length}
+          Badges Earned: {badgesWithStatus.filter((b) => b.isUnlocked).length} /{' '}
+          {badges.length}
         </Text>
       </View>
-      
+
       <FlatList
         data={badgesWithStatus}
         renderItem={renderBadgeItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         numColumns={2}
+        showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeTabView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
   },
   statsContainer: {
     padding: 16,

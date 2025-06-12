@@ -1,258 +1,396 @@
 import * as React from 'react';
-import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from 'react';
+import { supabase } from '@/lib/supabase';
+import type { User, Session } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Crypto from 'expo-crypto';
 
-type User = {
+type AuthUser = {
   id: string;
   email: string;
-  name: string;
+  name?: string;
   createdAt: string;
 };
 
 type AuthContextType = {
-  user: User | null;
+  user: AuthUser | null;
+  session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  updateProfile: (updates: Partial<User>) => Promise<void>;
+  updateProfile: (updates: {
+    name?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USERS_STORAGE_KEY = 'muscledia_users';
-const CURRENT_USER_KEY = 'muscledia_current_user';
-
-// Simple email validation
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-// Hash password using expo-crypto
-const hashPassword = async (password: string): Promise<string> => {
-  const salt = Math.random().toString(36).substring(2, 15);
-  const hash = await Crypto.digestStringAsync(
-    Crypto.CryptoDigestAlgorithm.SHA256,
-    password + salt
-  );
-  return `${salt}:${hash}`;
-};
-
-// Verify password
-const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
-  const [salt, hash] = hashedPassword.split(':');
-  const inputHash = await Crypto.digestStringAsync(
-    Crypto.CryptoDigestAlgorithm.SHA256,
-    password + salt
-  );
-  return inputHash === hash;
-};
-
-// Generate unique user ID
-const generateUserId = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
-};
-
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load current user on app start
   useEffect(() => {
-    loadCurrentUser();
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        setUser(mapSupabaseUserToAuthUser(session.user));
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      if (session?.user) {
+        setUser(mapSupabaseUserToAuthUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const loadCurrentUser = async () => {
-    try {
-      const currentUserData = await AsyncStorage.getItem(CURRENT_USER_KEY);
-      if (currentUserData) {
-        const userData = JSON.parse(currentUserData);
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error('Failed to load current user:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const mapSupabaseUserToAuthUser = (supabaseUser: User): AuthUser => {
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email!,
+      name:
+        supabaseUser.user_metadata?.name ||
+        supabaseUser.user_metadata?.full_name,
+      createdAt: supabaseUser.created_at,
+    };
   };
 
-  const saveUser = async (userData: User) => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userData));
-      setUser(userData);
-    } catch (error) {
-      console.error('Failed to save user:', error);
-    }
-  };
+      setIsLoading(true);
 
-  const getUsersFromStorage = async (): Promise<any[]> => {
-    try {
-      const usersData = await AsyncStorage.getItem(USERS_STORAGE_KEY);
-      return usersData ? JSON.parse(usersData) : [];
-    } catch (error) {
-      console.error('Failed to get users:', error);
-      return [];
-    }
-  };
-
-  const saveUsersToStorage = async (users: any[]) => {
-    try {
-      await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-    } catch (error) {
-      console.error('Failed to save users:', error);
-    }
-  };
-
-  const register = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
-    try {
       // Validation
       if (!email || !password || !name) {
         return { success: false, error: 'All fields are required' };
       }
 
-      if (!isValidEmail(email)) {
-        return { success: false, error: 'Please enter a valid email address' };
-      }
-
       if (password.length < 6) {
-        return { success: false, error: 'Password must be at least 6 characters long' };
+        return {
+          success: false,
+          error: 'Password must be at least 6 characters long',
+        };
       }
 
       if (name.trim().length < 2) {
-        return { success: false, error: 'Name must be at least 2 characters long' };
+        return {
+          success: false,
+          error: 'Name must be at least 2 characters long',
+        };
       }
 
-      // Check if user already exists
-      const users = await getUsersFromStorage();
-      const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      
-      if (existingUser) {
-        return { success: false, error: 'An account with this email already exists' };
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        return {
+          success: false,
+          error: 'Please enter a valid email address',
+        };
       }
 
-      // Create new user
-      const hashedPassword = await hashPassword(password);
-      const newUser = {
-        id: generateUserId(),
-        email: email.toLowerCase(),
+      console.log('Attempting registration with:', {
+        email: email.trim().toLowerCase(),
+        hasPassword: !!password,
         name: name.trim(),
-        password: hashedPassword,
-        createdAt: new Date().toISOString(),
-      };
+      });
 
-      // Save to users list
-      users.push(newUser);
-      await saveUsersToStorage(users);
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          emailRedirectTo: undefined, // Disable email confirmation redirect
+          data: {
+            name: name.trim(),
+            full_name: name.trim(),
+          },
+        },
+      });
 
-      // Create user object for context (without password)
-      const userForContext: User = {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        createdAt: newUser.createdAt,
-      };
+      console.log('Supabase registration response:', {
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        error: error?.message,
+        errorCode: error?.status,
+      });
 
-      // Set as current user
-      await saveUser(userForContext);
+      if (error) {
+        console.error('Supabase registration error:', error);
 
+        // Handle specific Supabase errors
+        if (
+          error.message?.includes('invalid') &&
+          error.message?.includes('email')
+        ) {
+          return {
+            success: false,
+            error:
+              'The email address format is not accepted. Please try a different email.',
+          };
+        }
+
+        if (error.message?.includes('User already registered')) {
+          return {
+            success: false,
+            error:
+              'An account with this email already exists. Please try signing in instead.',
+          };
+        }
+
+        if (error.message?.includes('signup disabled')) {
+          return {
+            success: false,
+            error:
+              'Account registration is currently disabled. Please contact support.',
+          };
+        }
+
+        return {
+          success: false,
+          error: error.message || 'Registration failed. Please try again.',
+        };
+      }
+
+      // If user was created successfully, create character
+      if (data.user) {
+        console.log('Creating character for user:', data.user.id);
+
+        // Import CharacterService dynamically to avoid circular dependency
+        const { CharacterService } = await import(
+          '@/services/characterService'
+        );
+
+        const characterResult = await CharacterService.createCharacter(
+          data.user.id,
+          name.trim(),
+          'male' // Default gender, can be changed later in profile
+        );
+
+        if (!characterResult.success) {
+          console.error('Failed to create character:', characterResult.error);
+          // Don't fail registration if character creation fails
+          // User can create character later
+        } else {
+          console.log(
+            'Character created successfully:',
+            characterResult.character?.id
+          );
+        }
+      }
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        console.log('Email confirmation required for user:', data.user.id);
+        return {
+          success: true, // This is actually a success!
+          error:
+            'Please check your email and click the confirmation link to complete registration.',
+        };
+      }
+
+      console.log('Registration successful for user:', data.user?.id);
       return { success: true };
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false, error: 'Registration failed. Please try again.' };
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.',
+      };
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
+      setIsLoading(true);
+
       // Validation
       if (!email || !password) {
         return { success: false, error: 'Email and password are required' };
       }
 
-      if (!isValidEmail(email)) {
-        return { success: false, error: 'Please enter a valid email address' };
+      console.log('Attempting login with:', email.trim().toLowerCase());
+
+      // Try to sign in with Supabase with error handling
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        if (error) {
+          console.error('Supabase login error:', error);
+          return {
+            success: false,
+            error: error.message || 'Login failed. Please try again.',
+          };
+        }
+
+        if (!data.session) {
+          return {
+            success: false,
+            error: 'Login failed. No session returned.',
+          };
+        }
+
+        // Login successful
+        return { success: true };
+      } catch (supabaseError: any) {
+        console.error('Caught Supabase API error:', supabaseError);
+
+        // Check for JSON parse error specifically
+        if (supabaseError.message?.includes('JSON Parse error')) {
+          return {
+            success: false,
+            error:
+              'Connection issue with authentication server. Please try again later.',
+          };
+        }
+
+        return {
+          success: false,
+          error:
+            supabaseError.message || 'Login failed due to a network issue.',
+        };
       }
-
-      // Find user
-      const users = await getUsersFromStorage();
-      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-      if (!user) {
-        return { success: false, error: 'Invalid email or password' };
-      }
-
-      // Verify password
-      const isPasswordValid = await verifyPassword(password, user.password);
-      if (!isPasswordValid) {
-        return { success: false, error: 'Invalid email or password' };
-      }
-
-      // Create user object for context (without password)
-      const userForContext: User = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        createdAt: user.createdAt,
+    } catch (error: any) {
+      console.error('General login error:', error);
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.',
       };
-
-      // Set as current user
-      await saveUser(userForContext);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Login failed. Please try again.' };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem(CURRENT_USER_KEY);
+      setIsLoading(true);
+
+      // Clear any local character data first
+      try {
+        await AsyncStorage.removeItem('character_data');
+        console.log('Character data cleared successfully');
+      } catch (err) {
+        console.log('Error clearing character data:', err);
+        // Continue with logout even if this fails
+      }
+
+      // Clear session first to avoid potential race conditions
       setUser(null);
+      setSession(null);
+
+      // Use a try-catch block for the signOut operation
+      try {
+        console.log('Attempting to sign out from Supabase');
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          console.error('Supabase signOut error:', error);
+          // We've already cleared local state, so just log the error
+        } else {
+          console.log('Supabase sign out successful');
+        }
+      } catch (signOutError) {
+        console.error('Caught signOut error:', signOutError);
+        // We've already cleared local state above
+      }
+
+      // Force clear any persisted session data just in case
+      try {
+        await AsyncStorage.removeItem('supabase.auth.token');
+        console.log('Auth token cleared from storage');
+      } catch (err) {
+        console.error('Failed to clear auth token:', err);
+      }
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const updateProfile = async (updates: Partial<User>) => {
-    if (!user) return;
-
+  const updateProfile = async (updates: {
+    name?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
     try {
-      const updatedUser = { ...user, ...updates };
-      
-      // Update in users storage
-      const users = await getUsersFromStorage();
-      const userIndex = users.findIndex(u => u.id === user.id);
-      if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], ...updates };
-        await saveUsersToStorage(users);
+      if (!session?.user) {
+        return { success: false, error: 'No user session found' };
       }
 
-      // Update current user
-      await saveUser(updatedUser);
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          name: updates.name,
+          full_name: updates.name,
+        },
+      });
+
+      if (error) {
+        console.error('Profile update error:', error);
+        return {
+          success: false,
+          error: error.message || 'Failed to update profile',
+        };
+      }
+
+      return { success: true };
     } catch (error) {
       console.error('Profile update error:', error);
+      return {
+        success: false,
+        error: 'An unexpected error occurred while updating profile',
+      };
     }
   };
 
   const value: AuthContextType = {
     user,
+    session,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!session?.user,
     login,
     register,
     logout,
     updateProfile,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
@@ -261,4 +399,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};

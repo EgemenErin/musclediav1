@@ -1,55 +1,55 @@
 export const Colors = {
   // Primary Brand Colors
-  primary: '#FBBC05',      // Golden yellow
-  primaryDark: '#E6A800',  // Darker golden yellow
+  primary: '#FBBC05', // Golden yellow
+  primaryDark: '#E6A800', // Darker golden yellow
   primaryLight: '#FFCC33', // Lighter golden yellow
-  
+
   // Dark Theme
   dark: {
-    background: '#0E121A',     // Main dark background
-    surface: '#1A1F2E',       // Card/surface background
-    surfaceLight: '#252B3A',  // Lighter surface
-    text: '#FFFFFF',          // Primary text
+    background: '#0E121A', // Main dark background
+    surface: '#1A1F2E', // Card/surface background
+    surfaceLight: '#252B3A', // Lighter surface
+    text: '#FFFFFF', // Primary text
     textSecondary: '#B0B8C4', // Secondary text
-    textMuted: '#7A8194',     // Muted text
-    border: '#2A3441',        // Border color
-    accent: '#FBBC05',        // Accent color (golden)
+    textMuted: '#7A8194', // Muted text
+    border: '#2A3441', // Border color
+    accent: '#FBBC05', // Accent color (golden)
     accentSecondary: '#FF6B35', // Secondary accent (orange)
-    success: '#10B981',       // Success green
-    warning: '#F59E0B',       // Warning amber
-    error: '#EF4444',         // Error red
-    info: '#3B82F6',          // Info blue
+    success: '#10B981', // Success green
+    warning: '#F59E0B', // Warning amber
+    error: '#EF4444', // Error red
+    info: '#3B82F6', // Info blue
   },
-  
+
   // Light Theme
   light: {
-    background: '#FFFFFF',    // Light background
-    surface: '#F8FAFC',       // Card/surface background
-    surfaceLight: '#F1F5F9',  // Lighter surface
-    text: '#0E121A',          // Primary text (using dark color)
+    background: '#FFFFFF', // Light background
+    surface: '#F8FAFC', // Card/surface background
+    surfaceLight: '#F1F5F9', // Lighter surface
+    text: '#0E121A', // Primary text (using dark color)
     textSecondary: '#475569', // Secondary text
-    textMuted: '#64748B',     // Muted text
-    border: '#E2E8F0',        // Border color
-    accent: '#FBBC05',        // Accent color (golden)
+    textMuted: '#64748B', // Muted text
+    border: '#E2E8F0', // Border color
+    accent: '#FBBC05', // Accent color (golden)
     accentSecondary: '#FF6B35', // Secondary accent (orange)
-    success: '#10B981',       // Success green
-    warning: '#F59E0B',       // Warning amber
-    error: '#EF4444',         // Error red
-    info: '#3B82F6',          // Info blue
+    success: '#10B981', // Success green
+    warning: '#F59E0B', // Warning amber
+    error: '#EF4444', // Error red
+    info: '#3B82F6', // Info blue
   },
-  
+
   // Common colors that work in both themes
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
-  
+
   // Gradient combinations
   gradients: {
     primary: ['#FBBC05', '#E6A800'],
     dark: ['#0E121A', '#1A1F2E'],
     accent: ['#FBBC05', '#FF6B35'],
   },
-  
+
   // Status colors with opacity variants
   status: {
     success: {
@@ -88,4 +88,4 @@ export const withOpacity = (color: string, opacity: number) => {
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-}; 
+};

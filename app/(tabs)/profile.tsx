@@ -1,27 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   TextInput,
   useColorScheme,
+  ActivityIndicator,
 } from 'react-native';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useAuth } from '@/hooks/useAuth';
 import CharacterAvatar from '@/components/CharacterAvatar';
-import { User, CreditCard as Edit, Save, Dumbbell, Award, Ruler, Weight, LogOut } from 'lucide-react-native';
+import SafeTabView from '@/components/SafeTabView';
+import {
+  User,
+  CreditCard as Edit,
+  Save,
+  Dumbbell,
+  Award,
+  Ruler,
+  Weight,
+  LogOut,
+  AlertCircle,
+} from 'lucide-react-native';
 
 export default function ProfileScreen() {
-  const { character, updateCharacter } = useCharacter();
+  const { character, isLoading, error, updateCharacter } = useCharacter();
   const { logout, user } = useAuth();
   const colorScheme = useColorScheme();
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(character.name || 'Adventurer');
-  const [height, setHeight] = useState(character.height?.toString() || '170');
-  const [weight, setWeight] = useState(character.weight?.toString() || '70');
-  const [goal, setGoal] = useState(character.goal || 'Get stronger');
+  const [name, setName] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [goal, setGoal] = useState('');
+
+  // Update local state when character data changes
+  useEffect(() => {
+    if (character) {
+      setName(character.name);
+      setHeight(character.height?.toString() || '170');
+      setWeight(character.weight?.toString() || '70');
+      setGoal(character.goal || 'Get stronger');
+    }
+  }, [character]);
 
   const isDark = colorScheme === 'dark';
   const textColor = isDark ? '#F9FAFB' : '#111827';
@@ -29,27 +50,61 @@ export default function ProfileScreen() {
   const cardBgColor = isDark ? '#1F2937' : '#FFFFFF';
   const inputBgColor = isDark ? '#374151' : '#F3F4F6';
 
-  const handleSave = () => {
-    updateCharacter({
-      ...character,
+  const handleSave = async () => {
+    if (!character) return;
+
+    await updateCharacter({
       name,
       height: parseInt(height),
       weight: parseInt(weight),
-      goal
+      goal,
     });
     setIsEditing(false);
   };
 
+  if (isLoading) {
+    return (
+      <SafeTabView style={[styles.container, { backgroundColor: bgColor }]}>
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#6D28D9" />
+          <Text style={[styles.loadingText, { color: textColor }]}>
+            Loading profile...
+          </Text>
+        </View>
+      </SafeTabView>
+    );
+  }
+
+  if (error || !character) {
+    return (
+      <SafeTabView style={[styles.container, { backgroundColor: bgColor }]}>
+        <View style={styles.centerContent}>
+          <AlertCircle size={48} color="#EF4444" />
+          <Text style={[styles.errorText, { color: textColor }]}>
+            {error || 'Failed to load profile'}
+          </Text>
+          <TouchableOpacity
+            style={[styles.logoutButton, { backgroundColor: '#EF4444' }]}
+            onPress={logout}
+          >
+            <LogOut size={20} color="#FFFFFF" />
+            <Text style={styles.logoutButtonText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeTabView>
+    );
+  }
+
   return (
-    <ScrollView 
+    <SafeTabView
       style={[styles.container, { backgroundColor: bgColor }]}
       contentContainerStyle={styles.contentContainer}
     >
       <View style={[styles.profileHeader, { backgroundColor: '#6D28D9' }]}>
         <View style={styles.avatarContainer}>
-          <CharacterAvatar 
-            level={character.level} 
-            gender={character.gender} 
+          <CharacterAvatar
+            level={character.level}
+            gender={character.gender}
             streak={character.streak}
             size="large"
           />
@@ -57,7 +112,11 @@ export default function ProfileScreen() {
             <Text style={styles.username}>{name}</Text>
           ) : (
             <TextInput
-              style={[styles.input, styles.nameInput, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
+              style={[
+                styles.input,
+                styles.nameInput,
+                { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+              ]}
               value={name}
               onChangeText={setName}
               placeholder="Your name"
@@ -67,9 +126,9 @@ export default function ProfileScreen() {
           <Text style={styles.levelText}>Level {character.level}</Text>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.editButton}
-          onPress={() => isEditing ? handleSave() : setIsEditing(true)}
+          onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
         >
           {isEditing ? (
             <Save size={20} color="#FFFFFF" />
@@ -83,28 +142,43 @@ export default function ProfileScreen() {
         <View style={[styles.statCard, { backgroundColor: cardBgColor }]}>
           <Dumbbell size={24} color="#F97316" />
           <Text style={[styles.statValue, { color: textColor }]}>
-            {character.questsCompleted}
+            {character.quests_completed}
           </Text>
-          <Text style={[styles.statLabel, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: isDark ? '#D1D5DB' : '#6B7280' },
+            ]}
+          >
             Workouts
           </Text>
         </View>
-        
+
         <View style={[styles.statCard, { backgroundColor: cardBgColor }]}>
           <Award size={24} color="#0EA5E9" />
           <Text style={[styles.statValue, { color: textColor }]}>
-            {badges.filter(b => b.isUnlocked).length}
+            {badges.filter((b) => b.isUnlocked).length}
           </Text>
-          <Text style={[styles.statLabel, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: isDark ? '#D1D5DB' : '#6B7280' },
+            ]}
+          >
             Badges
           </Text>
         </View>
-        
+
         <View style={[styles.statCard, { backgroundColor: cardBgColor }]}>
           <Text style={[styles.streakValue, { color: textColor }]}>
             🔥 {character.streak}
           </Text>
-          <Text style={[styles.statLabel, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: isDark ? '#D1D5DB' : '#6B7280' },
+            ]}
+          >
             Day Streak
           </Text>
         </View>
@@ -119,19 +193,29 @@ export default function ProfileScreen() {
           <View style={styles.infoIconContainer}>
             <User size={20} color="#6D28D9" />
           </View>
-          <Text style={[styles.infoLabel, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+          <Text
+            style={[
+              styles.infoLabel,
+              { color: isDark ? '#D1D5DB' : '#6B7280' },
+            ]}
+          >
             Gender
           </Text>
           <Text style={[styles.infoValue, { color: textColor }]}>
             {character.gender || 'Not set'}
           </Text>
         </View>
-        
+
         <View style={styles.infoRow}>
           <View style={styles.infoIconContainer}>
             <Ruler size={20} color="#6D28D9" />
           </View>
-          <Text style={[styles.infoLabel, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+          <Text
+            style={[
+              styles.infoLabel,
+              { color: isDark ? '#D1D5DB' : '#6B7280' },
+            ]}
+          >
             Height
           </Text>
           {!isEditing ? (
@@ -140,7 +224,10 @@ export default function ProfileScreen() {
             </Text>
           ) : (
             <TextInput
-              style={[styles.input, { backgroundColor: inputBgColor, color: textColor }]}
+              style={[
+                styles.input,
+                { backgroundColor: inputBgColor, color: textColor },
+              ]}
               value={height}
               onChangeText={setHeight}
               keyboardType="numeric"
@@ -149,12 +236,17 @@ export default function ProfileScreen() {
             />
           )}
         </View>
-        
+
         <View style={styles.infoRow}>
           <View style={styles.infoIconContainer}>
             <Weight size={20} color="#6D28D9" />
           </View>
-          <Text style={[styles.infoLabel, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+          <Text
+            style={[
+              styles.infoLabel,
+              { color: isDark ? '#D1D5DB' : '#6B7280' },
+            ]}
+          >
             Weight
           </Text>
           {!isEditing ? (
@@ -163,7 +255,10 @@ export default function ProfileScreen() {
             </Text>
           ) : (
             <TextInput
-              style={[styles.input, { backgroundColor: inputBgColor, color: textColor }]}
+              style={[
+                styles.input,
+                { backgroundColor: inputBgColor, color: textColor },
+              ]}
               value={weight}
               onChangeText={setWeight}
               keyboardType="numeric"
@@ -180,12 +275,13 @@ export default function ProfileScreen() {
 
       <View style={[styles.goalCard, { backgroundColor: cardBgColor }]}>
         {!isEditing ? (
-          <Text style={[styles.goalText, { color: textColor }]}>
-            {goal}
-          </Text>
+          <Text style={[styles.goalText, { color: textColor }]}>{goal}</Text>
         ) : (
           <TextInput
-            style={[styles.goalInput, { backgroundColor: inputBgColor, color: textColor }]}
+            style={[
+              styles.goalInput,
+              { backgroundColor: inputBgColor, color: textColor },
+            ]}
             value={goal}
             onChangeText={setGoal}
             placeholder="What's your fitness goal?"
@@ -194,7 +290,24 @@ export default function ProfileScreen() {
           />
         )}
       </View>
-    </ScrollView>
+
+      {/* Logout Section */}
+      <View style={styles.logoutSection}>
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: '#EF4444' }]}
+          onPress={logout}
+        >
+          <LogOut size={20} color="#FFFFFF" />
+          <Text style={styles.logoutButtonText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <Text
+          style={[styles.logoutHint, { color: isDark ? '#9CA3AF' : '#6B7280' }]}
+        >
+          Signed in as {user?.email}
+        </Text>
+      </View>
+    </SafeTabView>
   );
 }
 
@@ -348,6 +461,47 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 16,
     textAlignVertical: 'top',
+  },
+  logoutSection: {
+    marginTop: 32,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginBottom: 12,
+    minWidth: 200,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  logoutHint: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
   },
 });
 

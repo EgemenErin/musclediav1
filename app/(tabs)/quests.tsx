@@ -8,6 +8,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { useCharacter } from '@/hooks/useCharacter';
+import SafeTabView from '@/components/SafeTabView';
 import { Zap, CircleCheck as CheckCircle, Clock } from 'lucide-react-native';
 import { dailyQuests } from '@/data/quests';
 
@@ -28,15 +29,15 @@ export default function QuestsScreen() {
     }
   };
 
-  const renderQuestItem = ({ item }) => {
+  const renderQuestItem = ({ item }: { item: any }) => {
     const isCompleted = completedQuestIds.includes(item.id);
-    
+
     return (
-      <View 
+      <View
         style={[
-          styles.questCard, 
+          styles.questCard,
           { backgroundColor: cardBgColor },
-          isCompleted && styles.completedCard
+          isCompleted && styles.completedCard,
         ]}
       >
         <View style={styles.questHeader}>
@@ -52,65 +53,63 @@ export default function QuestsScreen() {
             </View>
           )}
         </View>
-        
-        <Text 
+
+        <Text
           style={[
-            styles.questDescription, 
-            { color: isDark ? '#D1D5DB' : '#4B5563' }
+            styles.questDescription,
+            { color: isDark ? '#D1D5DB' : '#4B5563' },
           ]}
         >
           {item.description}
         </Text>
-        
+
         <View style={styles.questFooter}>
           <View style={styles.timeInfo}>
             <Clock size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
-            <Text 
+            <Text
               style={[
-                styles.timeText, 
-                { color: isDark ? '#9CA3AF' : '#6B7280' }
+                styles.timeText,
+                { color: isDark ? '#9CA3AF' : '#6B7280' },
               ]}
             >
               {item.estimatedTime}
             </Text>
           </View>
-          
+
           {!isCompleted && (
             <TouchableOpacity
               style={styles.completeButton}
               onPress={() => handleCompleteQuest(item.id, item.xp)}
             >
-              <Text style={styles.completeButtonText}>
-                Complete
-              </Text>
+              <Text style={styles.completeButtonText}>Complete</Text>
             </TouchableOpacity>
           )}
-          
-          {isCompleted && (
-            <Text style={styles.completedText}>
-              Completed
-            </Text>
-          )}
+
+          {isCompleted && <Text style={styles.completedText}>Completed</Text>}
         </View>
       </View>
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: bgColor }]}>
+    <SafeTabView
+      style={[styles.container, { backgroundColor: bgColor }]}
+      useScrollView={false}
+    >
       <View style={styles.streakContainer}>
         <Text style={[styles.streakText, { color: textColor }]}>
-          🔥 Current Streak: {character.streak} days
+          🔥 Current Streak: {character?.streak} days
         </Text>
       </View>
-      
+
       <FlatList
         data={dailyQuests}
         renderItem={renderQuestItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeTabView>
   );
 }
 
