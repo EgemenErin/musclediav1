@@ -5,6 +5,7 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 ## ✨ Features
 
 ### 🎮 Gamification System
+
 - **Character Avatar**: Visual representation that evolves with your fitness level
 - **Level Progression**: Gain XP through workouts and level up your character
 - **Streak System**: Build workout streaks with visual flame effects
@@ -12,12 +13,14 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 - **Achievement Badges**: Unlock accomplishments as you progress
 
 ### 💪 Workout Tracking
+
 - **Exercise Library**: Browse and track various exercises
 - **Workout History**: View your recent workout sessions
 - **Progress Tracking**: Monitor sets, reps, and weights
 - **Personalized Stats**: Track total XP, quest completions, and level ups
 
 ### 📱 User Experience
+
 - **Dark/Light Mode**: Automatic theme switching based on system preferences
 - **Responsive Design**: Optimized for all screen sizes
 - **Smooth Animations**: Engaging visual feedback and transitions
@@ -26,6 +29,7 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI
@@ -34,20 +38,24 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd musclediav1-main
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server**
+
    ```bash
    npm run dev
    ```
+
    > **Note for Windows users**: The project now uses `cross-env` for cross-platform environment variable support.
 
 4. **Run on device/emulator**
@@ -58,13 +66,15 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 ## 📱 App Structure
 
 ### Main Screens
+
 - **Home**: Dashboard with character status, stats, and recent workouts
-- **Exercises**: Browse exercise library and track workouts  
+- **Exercises**: Browse exercise library and track workouts
 - **Quests**: View and complete daily, weekly, and special challenges
 - **Achievements**: Display unlocked badges and progress
 - **Profile**: Character customization and personal stats
 
 ### Key Components
+
 - `CharacterAvatar`: Animated avatar with level progression
 - `ProgressBar`: Visual XP and progress indicators
 - `StatsCard`: Reusable stat display components
@@ -82,25 +92,29 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 ## 📊 Character System
 
 ### Leveling
+
 - Start at Level 1 with 100 XP needed for Level 2
 - XP requirements increase by 20% each level
 - Complete workouts and quests to gain XP
 
 ### Streaks
+
 - Track consecutive workout days
 - Visual flame effects for 3+ day streaks
 - Streak resets if a day is missed
 
 ### Avatar Evolution
+
 - Character appearance changes based on level:
   - Beginner (Levels 1-4)
-  - Intermediate (Levels 5-14)  
+  - Intermediate (Levels 5-14)
   - Advanced (Levels 15-29)
   - Master (Level 30+)
 
 ## 🎯 Quest System
 
 ### Daily Quests
+
 - Morning Warm-Up (50 XP)
 - Lunch Break Stretching (30 XP)
 - Evening Strength Session (80 XP)
@@ -109,11 +123,13 @@ A gamified fitness tracking mobile app built with React Native and Expo, featuri
 - Hydration Hero (40 XP)
 
 ### Weekly Challenges
+
 - Distance Runner (200 XP)
 - Strength Master (250 XP)
 - Consistency King (300 XP)
 
 ### Special Events
+
 - Mountain Climber (350 XP)
 - Marathon Milestone (500 XP)
 
@@ -147,12 +163,14 @@ musclediav1/
 ## 🔧 Configuration
 
 ### Environment Setup
+
 - Expo SDK 53+
 - React Native 0.79+
 - TypeScript support enabled
 - Metro bundler configuration
 
 ### Customization
+
 - Modify quest definitions in `data/quests.ts`
 - Add new achievements in `data/badges.ts`
 - Customize character avatars in `components/CharacterAvatar.tsx`
