@@ -8,9 +8,14 @@ type CharacterAvatarProps = {
   size?: 'small' | 'medium' | 'large';
 };
 
-export default function CharacterAvatar({ level, gender, streak, size = 'medium' }: CharacterAvatarProps) {
+export default function CharacterAvatar({
+  level,
+  gender,
+  streak,
+  size = 'medium',
+}: CharacterAvatarProps) {
   const flameOpacity = useRef(new Animated.Value(0.4)).current;
-  
+
   useEffect(() => {
     // Pulsing animation for the flame effect
     Animated.loop(
@@ -41,23 +46,31 @@ export default function CharacterAvatar({ level, gender, streak, size = 'medium'
   const getAvatarImage = () => {
     const stage = getAvatarStage(level);
     const avatarGender = gender === 'male' ? 'male' : 'female';
-    
+
     // Placeholder URLs for avatar images - in a real app, you'd use actual images
     const avatarImages = {
       male: {
-        beginner: 'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        intermediate: 'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        advanced: 'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        master: 'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        beginner:
+          'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        intermediate:
+          'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        advanced:
+          'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        master:
+          'https://images.pexels.com/photos/1431283/pexels-photo-1431283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
       },
       female: {
-        beginner: 'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        intermediate: 'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        advanced: 'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        master: 'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-      }
+        beginner:
+          'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        intermediate:
+          'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        advanced:
+          'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        master:
+          'https://images.pexels.com/photos/416809/pexels-photo-416809.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+      },
     };
-    
+
     return avatarImages[avatarGender][stage];
   };
 
@@ -83,9 +96,9 @@ export default function CharacterAvatar({ level, gender, streak, size = 'medium'
         source={{ uri: getAvatarImage() }}
         style={[styles.avatarImage, sizeDimensions]}
       />
-      
+
       {showFlame && (
-        <Animated.View 
+        <Animated.View
           style={[
             styles.streakEffect,
             {
@@ -94,18 +107,20 @@ export default function CharacterAvatar({ level, gender, streak, size = 'medium'
               height: sizeDimensions.height * 0.6,
               top: -sizeDimensions.height * 0.4,
               left: -sizeDimensions.width * 0.1,
-            }
+            },
           ]}
         >
           <Image
-            source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/fitness-app-images/o/flame_effect.png?alt=media' }}
+            source={{
+              uri: 'https://firebasestorage.googleapis.com/v0/b/fitness-app-images/o/flame_effect.png?alt=media',
+            }}
             style={styles.flameImage}
             resizeMode="contain"
           />
         </Animated.View>
       )}
-      
-      <View 
+
+      <View
         style={[
           styles.levelBadge,
           {
@@ -114,11 +129,13 @@ export default function CharacterAvatar({ level, gender, streak, size = 'medium'
             borderRadius: size === 'small' ? 10 : size === 'large' ? 18 : 14,
             bottom: size === 'small' ? -5 : size === 'large' ? -10 : -8,
             right: size === 'small' ? -5 : size === 'large' ? -10 : -8,
-          }
+          },
         ]}
       >
         <Image
-          source={{ uri: 'https://firebasestorage.googleapis.com/v0/b/fitness-app-images/o/level_badge.png?alt=media' }}
+          source={{
+            uri: 'https://firebasestorage.googleapis.com/v0/b/fitness-app-images/o/level_badge.png?alt=media',
+          }}
           style={styles.badgeImage}
         />
       </View>

@@ -20,12 +20,17 @@ export default function ProgressBar({
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
 
   return (
-    <View style={[styles.container, { 
-      height, 
-      backgroundColor: theme.surfaceLight,
-      borderWidth: 1,
-      borderColor: theme.border,
-    }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          height,
+          backgroundColor: theme.surfaceLight,
+          borderWidth: 1,
+          borderColor: theme.border,
+        },
+      ]}
+    >
       <View
         style={[
           styles.progress,
